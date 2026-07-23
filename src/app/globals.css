@@ -1,26 +1,820 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Design tokens
+   Primitive -> semantic. Components consume semantic tokens only.
+   ========================================================================== */
+
+@theme {
+  /* ---- primitives: colour ---- */
+  --color-black: #000000;
+  --color-ink-900: #141413;
+  --color-ink-800: #1a1a18;
+  --color-sand-300: #d1cdc7;
+  --color-sand-100: #f3f0ee;
+  --color-white: #ffffff;
+  --color-brand-600: #2563eb;
+  --color-brand-500: #3b82f6;
+  --color-brand-400: #60a5fa;
+  --color-success: #1fa971;
+  --color-danger: #ff5c5c;
+
+  /* ---- primitives: type ---- */
+  --font-sans: var(--font-sofia), "Sofia Sans", Arial, sans-serif;
+
+  --text-xs: 0.75rem;      /* 12px — token spec lists 0px; floored to a legible minimum */
+  --text-sm: 0.875rem;     /* 14 */
+  --text-md: 1rem;         /* 16 — base */
+  --text-lg: 1.25rem;      /* 20 */
+  --text-xl: 1.5rem;       /* 24 */
+  --text-2xl: 2.25rem;     /* 36 */
+  --text-3xl: 4rem;        /* 64 */
+  --text-4xl: 7.5rem;      /* 120 */
+
+  --font-weight-base: 450;
+  --font-weight-medium: 550;
+
+  /* ---- primitives: spacing ---- */
+  --spacing-1: 4px;
+  --spacing-2: 6px;
+  --spacing-3: 8px;
+  --spacing-4: 10px;
+  --spacing-5: 12px;
+  --spacing-6: 16px;
+  --spacing-7: 23px;
+  --spacing-8: 24px;
+  --spacing-9: 32px;
+  --spacing-10: 48px;
+  --spacing-11: 64px;
+  --spacing-12: 96px;
+  --spacing-13: 128px;
+
+  /* ---- primitives: radius ---- */
+  --radius-xs: 6px;
+  --radius-sm: 20px;
+  --radius-md: 40px;
+  --radius-lg: 50px;
+  --radius-xl: 65px;
+  --radius-2xl: 999px;
+  --radius-pill: 1000px;
+
+  /* ---- primitives: motion ---- */
+  --motion-instant: 50ms;
+  --motion-fast: 400ms;
+  --motion-normal: 500ms;
+  --motion-slow: 1000ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- layout ---- */
+  --container-site: 1280px;
+}
+
+/* --------------------------------------------------------------------------
+   Semantic tokens — the site ships dark-only, so these are the only surface
+   values. (A light theme was removed; re-add it as a :root[data-theme] block.)
+   -------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  --surface-base: #000000;
+  --surface-raised: #1a1a18;
+  --surface-sunken: #0c0c0b;
+  --surface-inverse: #f3f0ee;
+  --surface-overlay: rgba(0, 0, 0, 0.72);
+
+  --text-primary: #f3f0ee;
+  --text-secondary: #ffffff;
+  --text-tertiary: #d1cdc7;
+  --text-inverse: #141413;
+  --text-accent: #60a5fa;
+  --text-danger: #ff5c5c;
+  --text-success: #1fa971;
+  --text-disabled: rgba(209, 205, 199, 0.45);
+
+  --border-default: #141413;
+  --border-strong: #3c3b37;
+  --border-subtle: rgba(209, 205, 199, 0.16);
+  --border-disabled: rgba(209, 205, 199, 0.2);
+
+  --focus-ring: #60a5fa;
+
+  --action-primary-bg: #f3f0ee;
+  --action-primary-bg-hover: #ffffff;
+  --action-primary-bg-active: #d1cdc7;
+  --action-primary-text: #141413;
+
+  --action-secondary-border: #d1cdc7;
+  --action-secondary-text: #f3f0ee;
+  --action-secondary-bg-hover: rgba(243, 240, 238, 0.1);
+  --action-secondary-bg-active: rgba(243, 240, 238, 0.18);
+
+  --action-disabled-bg: #2a2a27;
+
+  --glow-1: rgba(37, 99, 235, 0.38);
+  --glow-2: rgba(96, 165, 250, 0.3);
+  --grid-line: rgba(209, 205, 199, 0.07);
+
+  /* Scrim over service-card artwork, keeping text contrast above 4.5:1. */
+  --card-scrim-strong: rgba(0, 0, 0, 0.9);
+  --card-scrim: rgba(0, 0, 0, 0.74);
+  --card-scrim-top: rgba(0, 0, 0, 0.44);
 }
 
+/* Expose semantic tokens as named Tailwind colours.
+   Utilities must use these names (text-fg-muted, bg-raised, border-line) rather
+   than text-[var(--token)] — a bare var() in `text-[…]` is ambiguous between
+   colour and font-size, and Tailwind resolves it as font-size. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface-base);
+  --color-raised: var(--surface-raised);
+  --color-sunken: var(--surface-sunken);
+  --color-inverse: var(--surface-inverse);
+
+  --color-fg: var(--text-primary);
+  --color-fg-strong: var(--text-secondary);
+  --color-fg-muted: var(--text-tertiary);
+  --color-fg-inverse: var(--text-inverse);
+  --color-fg-disabled: var(--text-disabled);
+  --color-accent: var(--text-accent);
+  --color-danger: var(--text-danger);
+  --color-success: var(--text-success);
+
+  --color-line: var(--border-subtle);
+  --color-line-strong: var(--border-strong);
+  --color-focus: var(--focus-ring);
+
+  --color-hover: var(--action-secondary-bg-hover);
+  --color-hover-strong: var(--action-secondary-bg-active);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
   }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-md);
+    font-weight: var(--font-weight-base);
+    line-height: 1.3;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* A visible focus ring is mandatory on every focusable element. */
+  :focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::selection {
+    background: #60a5fa;
+    color: #141413;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--text-secondary);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+@utility container-site {
+  width: 100%;
+  max-width: var(--container-site);
+  margin-inline: auto;
+  padding-inline: var(--spacing-8);
+}
+
+/* Display type: measure set in ch so it scales with its own font size. */
+@utility t-display {
+  font-size: clamp(2.75rem, 9vw, var(--text-4xl));
+  line-height: 0.98;
+  font-weight: 700;
+  max-width: 15ch;
+}
+
+@utility t-h1 {
+  font-size: clamp(2rem, 5.5vw, var(--text-3xl));
+  line-height: 1.04;
+  font-weight: 700;
+  max-width: 18ch;
+}
+
+@utility t-h2 {
+  font-size: clamp(1.5rem, 3.4vw, var(--text-2xl));
+  line-height: 1.15;
+  font-weight: 700;
+  max-width: 24ch;
+}
+
+@utility t-h3 {
+  font-size: var(--text-lg);
+  line-height: 1.25;
+  font-weight: var(--font-weight-medium);
+}
+
+@utility t-lead {
+  font-size: clamp(1.0625rem, 1.6vw, var(--text-lg));
+  line-height: 1.55;
+  color: var(--text-tertiary);
+  max-width: 54ch;
+}
+
+@utility t-body {
+  font-size: var(--text-md);
+  line-height: 1.6;
+  color: var(--text-tertiary);
+  max-width: 66ch;
+}
+
+@utility t-eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-accent);
+}
+
+@utility section-y {
+  padding-block: clamp(var(--spacing-11), 9vw, var(--spacing-13));
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Faint blueprint grid used behind several sections. */
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+@media (max-width: 640px) {
+  .container-site { padding-inline: var(--spacing-6); }
+}
+
+/* ==========================================================================
+   Small shared component classes
+   ========================================================================== */
+
+@layer components {
+  .footer-heading {
+    margin-bottom: var(--spacing-6);
+    font-size: var(--text-sm);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    transition: color var(--motion-fast) var(--ease-standard);
+  }
+
+  .footer-link:hover {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Skip link — visible only on keyboard focus. */
+  .skip-link {
+    position: absolute;
+    top: var(--spacing-6);
+    left: var(--spacing-6);
+    z-index: 100;
+    transform: translateY(-250%);
+    padding: var(--spacing-5) var(--spacing-8);
+    border-radius: var(--radius-xs);
+    background: var(--action-primary-bg);
+    color: var(--action-primary-text);
+    font-weight: var(--font-weight-medium);
+    transition: transform var(--motion-fast) var(--ease-standard);
+  }
+
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+
+  /* Pill label used for tags and section markers. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+
+  .tag-accent {
+    color: var(--text-accent);
+    border-color: color-mix(in srgb, var(--text-accent) 45%, transparent);
+  }
+
+  /* ---------------- Button ----------------
+     States: default, hover, focus-visible, active, disabled, loading. */
+  .btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-3);
+    min-height: 44px;              /* touch target */
+    padding-inline: var(--spacing-8);
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-md);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition:
+      background-color var(--motion-fast) var(--ease-standard),
+      color var(--motion-fast) var(--ease-standard),
+      border-color var(--motion-fast) var(--ease-standard);
+  }
+
+  .btn-sm { min-height: 36px; padding-inline: var(--spacing-6); font-size: var(--text-sm); }
+  .btn-lg { min-height: 56px; padding-inline: var(--spacing-10); }
+
+  /* Label and spinner ride above the decorative layers below. */
+  .btn > * { position: relative; z-index: 1; }
+
+  .btn-primary {
+    background: var(--action-primary-bg);
+    color: var(--action-primary-text);
+  }
+
+  /* Authorisation sweep: the brand gradient clears the button left to right,
+     the way a payment resolves. Ink text measures 4.78:1 on the brand-500 end
+     and 7.56:1 on brand-400, so the label stays legible across the whole wipe.
+     brand-600 was rejected for this: it only reaches 3.18:1. */
+  .btn-primary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(100deg, var(--color-brand-500), var(--color-brand-400));
+    transform: translateX(-101%);
+    transition: transform var(--motion-normal) var(--ease-standard);
+  }
+
+  .btn-primary:hover::before,
+  .btn-primary:focus-visible::before { transform: translateX(0); }
+  .btn-primary:hover,
+  .btn-primary:focus-visible { color: #141413; }
+  .btn-primary:active::before { transform: translateX(0) scaleY(1.04); }
+
+  .btn-secondary {
+    background: transparent;
+    border-color: var(--action-secondary-border);
+    color: var(--action-secondary-text);
+  }
+  .btn-secondary:hover {
+    background: var(--action-secondary-bg-hover);
+    border-color: var(--color-brand-400);
+  }
+  .btn-secondary:active { background: var(--action-secondary-bg-active); }
+
+  /* A single band of light crosses the outline button on hover. */
+  .btn-secondary::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
+    width: 40%;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      color-mix(in srgb, var(--color-brand-400) 22%, transparent),
+      transparent
+    );
+    transform: translateX(-140%);
+    transition: transform var(--motion-slow) var(--ease-standard);
+  }
+
+  .btn-secondary:hover::after,
+  .btn-secondary:focus-visible::after { transform: translateX(350%); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-primary);
+    padding-inline: var(--spacing-6);
+  }
+  .btn-ghost:hover { background: var(--action-secondary-bg-hover); }
+  .btn-ghost:active { background: var(--action-secondary-bg-active); }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    background: var(--action-disabled-bg);
+    border-color: var(--border-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ---------------- Icon button ---------------- */
+  .icon-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color var(--motion-fast) var(--ease-standard),
+                border-color var(--motion-fast) var(--ease-standard);
+  }
+  .icon-btn:hover { background: var(--action-secondary-bg-hover); }
+  .icon-btn:active { background: var(--action-secondary-bg-active); }
+
+  /* ---------------- Form field ----------------
+     States: default, hover, focus-visible, filled, disabled, error. */
+  .field {
+    width: 100%;
+    min-height: 56px;
+    padding: var(--spacing-5) var(--spacing-8);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-xs);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    transition: border-color var(--motion-fast) var(--ease-standard),
+                background-color var(--motion-fast) var(--ease-standard);
+  }
+
+  .field::placeholder { color: var(--text-disabled); }
+  .field:hover { border-color: var(--text-tertiary); }
+  .field[aria-invalid="true"] { border-color: var(--text-danger); }
+
+  .field:disabled {
+    background: var(--action-disabled-bg);
+    border-color: var(--border-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  .field-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+  }
+
+  .field-hint {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+  }
+
+  .field-error {
+    font-size: var(--text-sm);
+    color: var(--text-danger);
+  }
+
+  /* ---------------- Service card ----------------
+     Artwork and promise line cross-fade in on hover or keyboard focus. */
+  .service-card__art {
+    opacity: 0;
+    transform: scale(1.08);
+    transition:
+      opacity var(--motion-slow) var(--ease-out-soft),
+      transform var(--motion-slow) var(--ease-out-soft);
+  }
+
+  .service-card:hover .service-card__art,
+  .service-card:focus-within .service-card__art {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .service-card__list,
+  .service-card__promise {
+    transition:
+      opacity var(--motion-fast) var(--ease-standard),
+      transform var(--motion-fast) var(--ease-standard);
+  }
+
+  .service-card__promise {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .service-card:hover .service-card__list,
+  .service-card:focus-within .service-card__list {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  .service-card:hover .service-card__promise,
+  .service-card:focus-within .service-card__promise {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Touch devices have no hover: keep the capability list, show the artwork faintly. */
+  @media (hover: none) {
+    .service-card__art { opacity: 0.28; transform: none; }
+    .service-card__promise { display: none; }
+    .service-card:hover .service-card__list { opacity: 1; transform: none; }
+  }
+
+  /* ---------------- Service figure (services page) ----------------
+     Artwork shown outright, with a veil that keeps the caption readable. */
+  .service-figure {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    margin: 0;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    transition: border-color var(--motion-normal) var(--ease-standard);
+  }
+
+  .service-figure:hover { border-color: var(--border-strong); }
+
+  .service-figure__veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      var(--card-scrim-strong) 0%,
+      var(--card-scrim) 38%,
+      transparent 75%
+    );
+  }
+
+  .service-figure__caption {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-8);
+    font-size: var(--text-md);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    color: var(--text-secondary);
+  }
+
+  /* ---------------- Values ladder rung ----------------
+     The accent rail sits just outside the content column so it reads as a
+     margin marker rather than crowding the index number. */
+  .value-rung::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--spacing-6) * -1);
+    width: 2px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(to bottom, var(--color-brand-600), var(--color-brand-400));
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--motion-normal) var(--ease-out-soft);
+  }
+
+  .value-rung.is-open::before { transform: scaleY(1); }
+
+  .value-rung::after {
+    content: "";
+    position: absolute;
+    inset: 0 calc(var(--spacing-6) * -1);
+    pointer-events: none;
+    border-radius: var(--radius-xs);
+    background: linear-gradient(to right, var(--action-secondary-bg-hover), transparent 55%);
+    opacity: 0;
+    transition: opacity var(--motion-normal) var(--ease-standard);
+  }
+
+  .value-rung.is-open::after { opacity: 1; }
+
+  .value-rung > * { position: relative; }
+
+  /* ---------------- Why-us ledger row ---------------- */
+  .why-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 -1px;
+    background: linear-gradient(to right, var(--action-secondary-bg-hover), transparent 55%);
+    opacity: 0;
+    transition: opacity var(--motion-normal) var(--ease-standard);
+    pointer-events: none;
+  }
+
+  .why-row:hover::before {
+    opacity: 1;
+  }
+
+  /* ---------------- Nav link ---------------- */
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--spacing-6);
+    border-radius: var(--radius-pill);
+    color: var(--text-tertiary);
+    transition: color var(--motion-fast) var(--ease-standard);
+  }
+  .nav-link:hover { color: var(--text-secondary); }
+  .nav-link[aria-current="page"] { color: var(--text-secondary); }
+}
+
+/* ==========================================================================
+   Keyframes
+   ========================================================================== */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
+}
+
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes aurora-drift {
+  0%   { background-position: 0% 0%, 100% 100%, 50% 0%; }
+  50%  { background-position: 35% 25%, 65% 75%, 25% 30%; }
+  100% { background-position: 10% 45%, 90% 55%, 75% 5%; }
+}
+
+/* Panel entrance. No fill-mode on purpose: if frames never run (backgrounded
+   tab), the element simply renders in its normal, visible state. */
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes word-rise {
+  from { transform: translateY(110%); }
+  to { transform: translateY(0); }
+}
+
+.animate-marquee { animation: marquee 42s linear infinite; }
+.animate-float-soft { animation: float-soft 6s ease-in-out infinite; }
+.panel-in { animation: panel-in var(--motion-fast) var(--ease-out-soft); }
+
+/* ==========================================================================
+   Aurora — drifting gradient wash used behind the CTA panel.
+   ========================================================================== */
+
+.aurora {
+  background-image:
+    radial-gradient(45% 60% at 15% 20%, var(--glow-1), transparent 62%),
+    radial-gradient(45% 60% at 85% 80%, var(--glow-2), transparent 62%),
+    radial-gradient(40% 52% at 60% 8%, var(--glow-1), transparent 62%);
+  background-size: 170% 170%;
+  filter: blur(14px);
+  animation: aurora-drift 22s ease-in-out infinite alternate;
+}
+.animate-orbit { animation: orbit-spin 48s linear infinite; }
+.animate-orbit-reverse { animation: orbit-spin 72s linear infinite reverse; }
+
+/* Accent underline that draws itself in as the mission statement is revealed. */
+.mission-underline {
+  position: relative;
+  white-space: nowrap;
+}
+
+.mission-underline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.06em;
+  height: 0.08em;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(to right, var(--color-brand-600), var(--color-brand-400));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--motion-slow) var(--ease-out-soft);
+}
+
+.reveal.is-visible .mission-underline::after,
+:not(.js) .mission-underline::after {
+  transform: scaleX(1);
+}
+
+.reveal.is-visible .mission-underline:nth-of-type(2)::after { transition-delay: 0.15s; }
+.reveal.is-visible .mission-underline:nth-of-type(3)::after { transition-delay: 0.3s; }
+
+/* ==========================================================================
+   Scroll reveal
+   Content ships visible. Only when the head script confirms JS (.js on <html>)
+   does an element start hidden and animate in — so a no-JS or failed-hydration
+   client still sees everything.
+   ========================================================================== */
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 20px));
+  transition:
+    opacity var(--motion-normal) var(--ease-out-soft) var(--reveal-delay, 0s),
+    transform var(--motion-normal) var(--ease-out-soft) var(--reveal-delay, 0s);
+}
+
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Word-by-word heading animation. */
+/* The clip box needs to be taller than the glyphs, otherwise a tight
+   line-height (0.98 on display type) lets overflow:hidden shave ascenders. */
+.word-clip {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+
+.word-rise {
+  display: inline-block;
+  animation: word-rise var(--motion-slow) var(--ease-out-soft) both;
+}
+
+/* ==========================================================================
+   Reduced motion — decorative motion is removed, not merely shortened.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    animation-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Reveals resolve to their final state with no movement at all. */
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .animate-marquee,
+  .animate-float-soft,
+  .animate-orbit,
+  .animate-orbit-reverse,
+  .aurora {
+    animation: none;
+  }
+
+  /* Underlines are present, they just do not draw themselves. */
+  .mission-underline::after {
+    transform: scaleX(1);
+  }
 }

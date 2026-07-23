@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="cb-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#12294d"/>
+      <stop offset="50%" stop-color="#12100e"/>
+      <stop offset="100%" stop-color="#0b1730"/>
+    </linearGradient>
+    <linearGradient id="cb-route" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#60a5fa" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity=".2"/>
+    </linearGradient>
+    <radialGradient id="cb-glow" cx="70%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity=".45"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#cb-bg)"/>
+  <rect width="800" height="600" fill="url(#cb-glow)"/>
+
+  <!-- globe meridians -->
+  <g fill="none" stroke="#d1cdc7" stroke-width="1.2" opacity=".2">
+    <circle cx="400" cy="300" r="210"/>
+    <ellipse cx="400" cy="300" rx="80" ry="210"/>
+    <ellipse cx="400" cy="300" rx="150" ry="210"/>
+    <line x1="190" y1="300" x2="610" y2="300"/>
+    <path d="M212 200 H588"/>
+    <path d="M212 400 H588"/>
+  </g>
+
+  <!-- transfer arcs -->
+  <g fill="none" stroke="url(#cb-route)" stroke-width="2.5" stroke-linecap="round">
+    <path d="M250 400 Q400 140 560 250"/>
+    <path d="M300 200 Q460 380 590 360" opacity=".7"/>
+    <path d="M220 320 Q380 420 540 430" opacity=".5"/>
+  </g>
+
+  <!-- endpoints -->
+  <g>
+    <circle cx="250" cy="400" r="7" fill="#2563eb"/>
+    <circle cx="560" cy="250" r="7" fill="#60a5fa"/>
+    <circle cx="300" cy="200" r="5" fill="#60a5fa" opacity=".8"/>
+    <circle cx="590" cy="360" r="5" fill="#60a5fa" opacity=".6"/>
+  </g>
+</svg>

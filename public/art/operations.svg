@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="op-bg" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#12100e"/>
+      <stop offset="60%" stop-color="#0b1730"/>
+      <stop offset="100%" stop-color="#12294d"/>
+    </linearGradient>
+    <linearGradient id="op-bar" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity=".95"/>
+    </linearGradient>
+    <radialGradient id="op-glow" cx="45%" cy="80%" r="65%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity=".4"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#op-bg)"/>
+  <rect width="800" height="600" fill="url(#op-glow)"/>
+
+  <!-- baseline grid -->
+  <g stroke="#d1cdc7" stroke-width="1" opacity=".12">
+    <line x1="80" y1="480" x2="720" y2="480"/>
+    <line x1="80" y1="380" x2="720" y2="380"/>
+    <line x1="80" y1="280" x2="720" y2="280"/>
+    <line x1="80" y1="180" x2="720" y2="180"/>
+  </g>
+
+  <!-- throughput bars -->
+  <g fill="url(#op-bar)">
+    <rect x="120" y="360" width="46" height="120" rx="6"/>
+    <rect x="196" y="300" width="46" height="180" rx="6"/>
+    <rect x="272" y="330" width="46" height="150" rx="6"/>
+    <rect x="348" y="240" width="46" height="240" rx="6"/>
+    <rect x="424" y="270" width="46" height="210" rx="6"/>
+    <rect x="500" y="190" width="46" height="290" rx="6"/>
+    <rect x="576" y="150" width="46" height="330" rx="6"/>
+  </g>
+
+  <!-- trend line -->
+  <path d="M143 350 L219 292 L295 322 L371 232 L447 262 L523 182 L599 142"
+        fill="none" stroke="#f3f0ee" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>
+  <g fill="#f3f0ee">
+    <circle cx="371" cy="232" r="5"/>
+    <circle cx="599" cy="142" r="6"/>
+  </g>
+
+  <!-- control markers -->
+  <g stroke="#2563eb" stroke-width="1.5" opacity=".6" stroke-dasharray="5 6">
+    <line x1="80" y1="215" x2="720" y2="215"/>
+  </g>
+</svg>
