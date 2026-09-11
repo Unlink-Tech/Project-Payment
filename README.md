@@ -1,4 +1,4 @@
-# Project Payment — website
+# Ease Plus — website
 
 Redesign of [projectpayment.me](https://projectpayment.me) as a Next.js app: dark-first,
 token-driven, animated, and responsive. All copy is carried over from the existing

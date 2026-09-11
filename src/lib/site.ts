@@ -4,8 +4,8 @@
  */
 
 export const site = {
-  name: "Project Payment",
-  legalName: "Project Payment Pte. Ltd.",
+  name: "Ease Plus",
+  legalName: "Ease Plus Pte. Ltd.",
   tagline: "Payments & e-commerce advisory",
   description:
     "Independent payments and e-commerce advisory. We help digital businesses build resilient, operationally sound commerce ecosystems.",
@@ -22,16 +22,16 @@ export const nav = [
 
 export const contact = {
   emails: [
-    { label: "sales@projpayment.com", href: "mailto:sales@projpayment.com", note: "Project enquiries" },
+    { label: "sales@ease-plus.com", href: "mailto:sales@ease-plus.com", note: "Project enquiries" },
   ],
   offices: [
     {
-      entity: "Project Payment Pte Ltd",
+      entity: "Ease Plus Pte Ltd",
       region: "Singapore",
       address: "7 Temasek Boulevard, #32-18 Suntec Tower One, Singapore 038987",
     },
     {
-      entity: "Project Payment HK Limited",
+      entity: "Ease Plus HK Limited",
       region: "Hong Kong",
       address: "Unit 308, 3/F, Chevalier House, 45-51 Chatham Rd South, Tsim Sha Tsui, Hong Kong",
     },

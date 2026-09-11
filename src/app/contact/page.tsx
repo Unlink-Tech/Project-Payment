@@ -9,7 +9,7 @@ import { contact } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Ready to optimise your payment infrastructure strategy? Start the conversation with Project Payment.",
+    "Ready to optimise your payment infrastructure strategy? Start the conversation with Ease Plus.",
 };
 
 export default function ContactPage() {

@@ -8,7 +8,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/Button";
 
 /**
- * "Why Project Payment", argued as a contrast.
+ * "Why Ease Plus", argued as a contrast.
  *
  * A list of adjectives asks the reader to take our word for it; naming the
  * common practice next to ours lets them judge the difference themselves.
@@ -30,7 +30,7 @@ export function WhyUs() {
         {/* Sticky argument */}
         <div className="lg:sticky lg:top-28 lg:self-start">
           <Reveal as="p" className="t-eyebrow">
-            Why Project Payment
+            Why Ease Plus
           </Reveal>
           <Reveal delay={0.08}>
             <h2 id="why-title" className="t-h1 mt-[var(--spacing-6)]">
@@ -104,7 +104,7 @@ export function WhyUs() {
                           >
                             ✓
                           </span>
-                          Project Payment
+                          Ease Plus
                         </dt>
                         <dd className="text-[var(--text-md)] leading-[1.6] font-[550] text-fg-strong">
                           {item.ours}

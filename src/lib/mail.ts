@@ -26,8 +26,8 @@ export type DeliveryResult =
   | { delivered: true; via: "resend" | "smtp" }
   | { delivered: false; reason: "unconfigured" | "error"; detail?: string };
 
-const TO = process.env.CONTACT_TO_EMAIL ?? "sales@projpayment.com";
-const FROM = process.env.CONTACT_FROM_EMAIL ?? "Project Payment <onboarding@resend.dev>";
+const TO = process.env.CONTACT_TO_EMAIL ?? "sales@ease-plus.com";
+const FROM = process.env.CONTACT_FROM_EMAIL ?? "Ease Plus <onboarding@resend.dev>";
 
 function escapeHtml(value: string) {
   return value
@@ -76,8 +76,8 @@ function buildHtml(enquiry: Enquiry) {
       <hr style="border:none;border-top:1px solid #e5e1dd;margin:24px 0;" />
       <p style="margin:0 0 8px;font:600 14px Arial,sans-serif;color:#141413;">Message</p>
       <p style="margin:0;font:14px/1.6 Arial,sans-serif;color:#3f3d38;white-space:pre-wrap;">${escapeHtml(
-        enquiry.message,
-      )}</p>
+    enquiry.message,
+  )}</p>
     </div>
   </div>`;
 }

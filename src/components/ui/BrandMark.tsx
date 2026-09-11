@@ -2,18 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { site } from "@/lib/site";
 
-import logo from "../../../public/pp-logo-light.svg";
+import logo from "../../../public/PP-logo.png";
 
 /**
  * The full logo lockup (mark + wordmark).
  *
- * The site is dark-only, so only the white-wordmark artwork ships.
+ * The site is dark-only, so the glow artwork ships as-is; its transparent
+ * margins are trimmed so `height` sizes the wordmark itself.
  * `PP-logo-dark.svg` (black wordmark) is kept in /public for a light theme.
  */
 export function BrandMark({ className = "", height = 26 }: { className?: string; height?: number }) {
   return (
     <span className={`block w-auto shrink-0 ${className}`} style={{ height }}>
-      <Image src={logo} alt="" aria-hidden priority unoptimized className="h-full w-auto" />
+      <Image src={logo} alt="" aria-hidden priority className="h-full w-auto" />
     </span>
   );
 }
