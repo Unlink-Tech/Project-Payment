@@ -13,7 +13,7 @@ import { contact, stats } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Project Payment is an independent payments and e-commerce advisory firm, founded in 2021, with entities in Singapore and Hong Kong.",
+    "Ease Plus is an independent payments and e-commerce advisory firm, founded in 2021, with entities in Singapore and Hong Kong.",
 };
 
 /** Local time offsets, so the office list tells you when someone is actually awake. */
@@ -46,7 +46,7 @@ export default function AboutPage() {
               <Card tilt={false} className="bg-sunken">
                 <p className="t-eyebrow">Established 2021</p>
                 <p className="text-lg leading-[1.5] text-fg">
-                  Project Payment Pte. Ltd. exists to support digital businesses in building
+                  Ease Plus Pte. Ltd. exists to support digital businesses in building
                   resilient and operationally sound commerce ecosystems.
                 </p>
               </Card>

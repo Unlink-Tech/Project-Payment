@@ -90,7 +90,7 @@ export function ContactForm() {
       setValues(initial);
       setTouched({});
     } catch {
-      setFailure("Something went wrong sending that. Please email sales@projpayment.com directly.");
+      setFailure("Something went wrong sending that. Please email sales@ease-plus.com directly.");
       setStatus("failed");
     }
   };

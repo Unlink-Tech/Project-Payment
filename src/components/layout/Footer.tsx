@@ -87,7 +87,7 @@ export function Footer() {
                      border-t border-line pt-[var(--spacing-8)]
                      text-sm text-fg-muted"
         >
-          <p>© {new Date().getFullYear()} Project Payment Pte Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Ease Plus Pte Ltd. All rights reserved.</p>
           <p>Registered in Singapore and Hong Kong.</p>
         </div>
       </div>
