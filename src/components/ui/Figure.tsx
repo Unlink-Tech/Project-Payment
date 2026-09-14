@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 /**
  * Image block used by the home-page preview variants.
  *
@@ -32,13 +30,11 @@ export function Figure({
         }`}
         style={{ aspectRatio: ratio }}
       >
-        <Image
+        <img
           src={src}
           alt={alt}
-          fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          priority={priority}
-          className="object-cover"
+          loading={priority ? "eager" : "lazy"}
+          className="absolute inset-0 h-full w-full object-cover"
         />
       </div>
       {caption && (

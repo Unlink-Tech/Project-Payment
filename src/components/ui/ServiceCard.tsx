@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRef, type MouseEvent } from "react";
 import { motion, useMotionValue, useMotionTemplate, useReducedMotion } from "motion/react";
@@ -43,13 +42,11 @@ export function ServiceCard({ service }: { service: Service }) {
     >
       {/* Artwork — decorative, so it stays out of the accessibility tree. */}
       <div aria-hidden className="service-card__art pointer-events-none absolute inset-0 -z-10">
-        <Image
+        <img
           src={service.art}
           alt=""
-          fill
-          sizes="(max-width: 1024px) 100vw, 33vw"
-          className="object-cover"
-          priority={false}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
         />
         {/* Scrim: keeps body copy above 4.5:1 once the artwork is showing. */}
         <span className="absolute inset-0 bg-[linear-gradient(to_top,var(--card-scrim-strong)_0%,var(--card-scrim)_55%,var(--card-scrim-top)_100%)]" />
