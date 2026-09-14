@@ -174,9 +174,9 @@ export function ContactForm() {
             className={fieldClass}
             disabled={status === "loading"}
           />
-          <p id="email-hint" className="field-hint">
+          {/* <p id="email-hint" className="field-hint">
             Use a company domain so we can route your enquiry.
-          </p>
+          </p> */}
           {errorFor("email")}
         </div>
       </div>

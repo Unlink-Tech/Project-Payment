@@ -78,7 +78,11 @@ export async function POST(request: Request) {
 
   // A transport error is a real failure — tell the client so it can offer the
   // direct email address instead of pretending the message went through.
-  if (!result.delivered && result.reason === "error") {
+  // A missing transport is tolerated in development only.
+  if (
+    !result.delivered &&
+    (result.reason === "error" || process.env.NODE_ENV === "production")
+  ) {
     return NextResponse.json(
       { error: "The message could not be delivered. Please email us directly." },
       { status: 502 },

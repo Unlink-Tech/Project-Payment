@@ -80,7 +80,7 @@ export function Mission({
 
           <Reveal delay={0.24}>
             <p className="mt-[var(--spacing-7)] text-sm text-fg-muted">
-              Choose a domain to see what we actually look at.<span aria-hidden> →</span>
+              Choose a domain to see what we actually look at<span aria-hidden> →</span>
             </p>
           </Reveal>
         </div>
