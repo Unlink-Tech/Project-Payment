@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
 import { PageHero } from "@/components/sections/PageHero";
 import { Process } from "@/components/sections/Process";
@@ -79,12 +78,10 @@ export default function ServicesPage() {
                 {/* Always-visible artwork */}
                 <Reveal delay={0.24}>
                   <figure className="service-figure group mt-[var(--spacing-9)]">
-                    <Image
+                    <img
                       src={service.art}
                       alt=""
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 45vw"
-                      className="object-cover transition-transform duration-[var(--motion-slow)]
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[var(--motion-slow)]
                                  ease-[var(--ease-out-soft)] group-hover:scale-105"
                     />
                     <span aria-hidden className="service-figure__veil" />

@@ -1,8 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
 import { site } from "@/lib/site";
-
-import logo from "../../../public/PP-logo.png";
 
 /**
  * The full logo lockup (mark + wordmark).
@@ -14,7 +11,12 @@ import logo from "../../../public/PP-logo.png";
 export function BrandMark({ className = "", height = 26 }: { className?: string; height?: number }) {
   return (
     <span className={`block w-auto shrink-0 ${className}`} style={{ height }}>
-      <Image src={logo} alt="" aria-hidden priority className="h-full w-auto" />
+      <img
+        src="/PP-logo.png"
+        alt=""
+        aria-hidden="true"
+        className="h-full w-auto"
+      />
     </span>
   );
 }
