@@ -1,17 +1,19 @@
 import "server-only";
 
-import nodemailer from "nodemailer";
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 /**
- * Email delivery for contact enquiries.
+ * Email delivery for contact enquiries, via Amazon SES.
  *
- * Two transports, chosen by which environment variables are present:
- *   1. Resend  — set RESEND_API_KEY (uses the HTTP API, no SDK needed)
- *   2. SMTP    — set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
+ * Environment (server-only — never prefix these with NEXT_PUBLIC_):
+ *   AWS_REGION             SES region the sending identity is verified in
+ *   AWS_ACCESS_KEY_ID      IAM user limited to ses:SendEmail
+ *   AWS_SECRET_ACCESS_KEY
+ *   SES_FROM_EMAIL         address on the verified domain, e.g. "Ease Plus <noreply@ease-plus.com>"
+ *   SES_TO_EMAIL           recipient; defaults to sales@ease-plus.com
  *
- * If neither is configured the enquiry is logged and reported as undelivered,
- * so local development works without credentials but never silently claims to
- * have sent mail it did not send.
+ * Credentials are not read here: the SDK's default provider chain picks them up
+ * from the environment, so nothing secret passes through application code.
  */
 
 export type Enquiry = {
@@ -23,11 +25,22 @@ export type Enquiry = {
 };
 
 export type DeliveryResult =
-  | { delivered: true; via: "resend" | "smtp" }
-  | { delivered: false; reason: "unconfigured" | "error"; detail?: string };
+  | { delivered: true; messageId?: string }
+  | { delivered: false; reason: "unconfigured" | "error" };
 
-const TO = process.env.CONTACT_TO_EMAIL ?? "sales@ease-plus.com";
-const FROM = process.env.CONTACT_FROM_EMAIL ?? "Ease Plus <onboarding@resend.dev>";
+const DEFAULT_TO = "sales@ease-plus.com";
+
+let client: SESClient | undefined;
+
+/** One client per process: PM2 keeps the server alive, so connections are reused. */
+function getClient(region: string) {
+  client ??= new SESClient({
+    region,
+    maxAttempts: 2,
+    requestHandler: { connectionTimeout: 5_000, requestTimeout: 10_000 },
+  });
+  return client;
+}
 
 function escapeHtml(value: string) {
   return value
@@ -38,26 +51,36 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
+/** Headers must be a single line; strip anything that could fold or break them. */
+function singleLine(value: string) {
+  return value.replace(/[\r\n\t]+/g, " ").trim();
+}
+
 function buildSubject(enquiry: Enquiry) {
-  return `New enquiry: ${enquiry.company} (${enquiry.name})`;
+  const parts = ["New Website Enquiry", enquiry.interest, enquiry.company].filter(Boolean);
+  return singleLine(parts.join(" | "));
 }
 
 function buildText(enquiry: Enquiry) {
   return [
-    `Name:     ${enquiry.name}`,
-    `Email:    ${enquiry.email}`,
-    `Company:  ${enquiry.company}`,
-    `Interest: ${enquiry.interest || "Not specified"}`,
+    "New website enquiry",
+    "",
+    `Name:             ${enquiry.name}`,
+    `Email:            ${enquiry.email}`,
+    `Company:          ${enquiry.company}`,
+    `Area of Interest: ${enquiry.interest || "Not specified"}`,
     "",
     "Message:",
     enquiry.message,
+    "",
+    "Reply to this email to respond directly to the sender.",
   ].join("\n");
 }
 
 function buildHtml(enquiry: Enquiry) {
   const row = (label: string, value: string) => `
     <tr>
-      <td style="padding:6px 16px 6px 0;color:#6b6862;font:14px Arial,sans-serif;vertical-align:top;">${label}</td>
+      <td style="padding:6px 16px 6px 0;color:#6b6862;font:14px Arial,sans-serif;vertical-align:top;white-space:nowrap;">${label}</td>
       <td style="padding:6px 0;color:#141413;font:14px Arial,sans-serif;">${escapeHtml(value)}</td>
     </tr>`;
 
@@ -71,83 +94,55 @@ function buildHtml(enquiry: Enquiry) {
         ${row("Name", enquiry.name)}
         ${row("Email", enquiry.email)}
         ${row("Company", enquiry.company)}
-        ${row("Interest", enquiry.interest || "Not specified")}
+        ${row("Area of Interest", enquiry.interest || "Not specified")}
       </table>
       <hr style="border:none;border-top:1px solid #e5e1dd;margin:24px 0;" />
       <p style="margin:0 0 8px;font:600 14px Arial,sans-serif;color:#141413;">Message</p>
       <p style="margin:0;font:14px/1.6 Arial,sans-serif;color:#3f3d38;white-space:pre-wrap;">${escapeHtml(
     enquiry.message,
   )}</p>
+      <hr style="border:none;border-top:1px solid #e5e1dd;margin:24px 0;" />
+      <p style="margin:0;font:12px Arial,sans-serif;color:#6b6862;">
+        Reply to this email to respond directly to the sender.
+      </p>
     </div>
   </div>`;
 }
 
-async function sendViaResend(enquiry: Enquiry): Promise<DeliveryResult> {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: FROM,
-      to: [TO],
-      reply_to: enquiry.email,
-      subject: buildSubject(enquiry),
-      text: buildText(enquiry),
-      html: buildHtml(enquiry),
-    }),
-  });
+export async function sendEnquiry(enquiry: Enquiry): Promise<DeliveryResult> {
+  const region = process.env.AWS_REGION;
+  const from = process.env.SES_FROM_EMAIL;
+  const to = process.env.SES_TO_EMAIL || DEFAULT_TO;
 
-  if (!response.ok) {
-    const detail = await response.text();
-    return { delivered: false, reason: "error", detail: `Resend ${response.status}: ${detail}` };
+  if (!region || !from) {
+    console.error("[contact] SES is not configured: set AWS_REGION and SES_FROM_EMAIL.");
+    return { delivered: false, reason: "unconfigured" };
   }
 
-  return { delivered: true, via: "resend" };
-}
-
-async function sendViaSmtp(enquiry: Enquiry): Promise<DeliveryResult> {
-  const port = Number(process.env.SMTP_PORT ?? 587);
-
-  const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth:
-      process.env.SMTP_USER && process.env.SMTP_PASS
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
-  });
-
-  await transport.sendMail({
-    from: FROM,
-    to: TO,
-    replyTo: enquiry.email,
-    subject: buildSubject(enquiry),
-    text: buildText(enquiry),
-    html: buildHtml(enquiry),
-  });
-
-  return { delivered: true, via: "smtp" };
-}
-
-export async function sendEnquiry(enquiry: Enquiry): Promise<DeliveryResult> {
   try {
-    if (process.env.RESEND_API_KEY) return await sendViaResend(enquiry);
-    if (process.env.SMTP_HOST) return await sendViaSmtp(enquiry);
-
-    console.warn(
-      "[contact] No mail transport configured (set RESEND_API_KEY or SMTP_HOST). Enquiry logged only:",
-      { ...enquiry, message: `${enquiry.message.slice(0, 120)}…` },
+    const result = await getClient(region).send(
+      new SendEmailCommand({
+        Source: from,
+        Destination: { ToAddresses: [to] },
+        // The visitor is only ever a Reply-To, never the sender.
+        ReplyToAddresses: [enquiry.email],
+        Message: {
+          Subject: { Data: buildSubject(enquiry), Charset: "UTF-8" },
+          Body: {
+            Text: { Data: buildText(enquiry), Charset: "UTF-8" },
+            Html: { Data: buildHtml(enquiry), Charset: "UTF-8" },
+          },
+        },
+      }),
     );
-    return { delivered: false, reason: "unconfigured" };
+
+    return { delivered: true, messageId: result.MessageId };
   } catch (error) {
-    console.error("[contact] Delivery failed:", error);
-    return {
-      delivered: false,
-      reason: "error",
-      detail: error instanceof Error ? error.message : String(error),
-    };
+    // Log the error name and message only; the SDK error carries request
+    // metadata but never credentials. Details stay server-side.
+    const name = error instanceof Error ? error.name : "UnknownError";
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[contact] SES delivery failed: ${name}: ${message}`);
+    return { delivered: false, reason: "error" };
   }
 }

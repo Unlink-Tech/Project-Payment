@@ -6,7 +6,7 @@
 export const site = {
   name: "Ease Plus",
   legalName: "Ease Plus Pte. Ltd.",
-  tagline: "Payments & e-commerce advisory",
+  tagline: "Payments & E-Commerce Advisory",
   description:
     "Independent payments and e-commerce advisory. We help digital businesses build resilient, operationally sound commerce ecosystems.",
   url: "https://projectpayment.me",

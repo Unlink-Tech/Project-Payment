@@ -1,28 +1,37 @@
 import { NextResponse } from "next/server";
 
-import { sendEnquiry, type Enquiry } from "@/lib/mail";
+import { sendEnquiry } from "@/lib/mail";
 
 /**
  * Contact endpoint.
  *
  * Validation runs server-side as well as in the client, since the client check
- * is a convenience and not a control. Delivery transport is selected in
- * `src/lib/mail.ts` from the environment.
+ * is a convenience and not a control. Delivery goes through Amazon SES in
+ * `src/lib/mail.ts`. The recipient and sender come from server configuration
+ * only; nothing in the request body can change them.
  */
-
-type Payload = Partial<Enquiry> & { website?: string };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-/** Naive fixed-window rate limit. Per-instance only — front with a real limiter if traffic warrants. */
-const WINDOW_MS = 60_000;
+const LIMITS = { name: 120, email: 254, company: 200, interest: 200, messageMin: 20, messageMax: 2000 };
+
+/**
+ * Fixed-window rate limit held in memory. Suitable for the single long-lived
+ * Node process PM2 runs on Lightsail; counts reset when the process restarts.
+ */
+const WINDOW_MS = 10 * 60_000;
 const MAX_PER_WINDOW = 5;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
 function rateLimited(ip: string) {
   const now = Date.now();
-  const entry = hits.get(ip);
 
+  // Drop expired windows so the map cannot grow without bound.
+  if (hits.size > 1_000) {
+    for (const [key, entry] of hits) if (now > entry.resetAt) hits.delete(key);
+  }
+
+  const entry = hits.get(ip);
   if (!entry || now > entry.resetAt) {
     hits.set(ip, { count: 1, resetAt: now + WINDOW_MS });
     return false;
@@ -32,58 +41,69 @@ function rateLimited(ip: string) {
   return entry.count > MAX_PER_WINDOW;
 }
 
-export async function POST(request: Request) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+/** Prefers the proxy-set X-Real-IP (e.g. nginx) over the client-controllable X-Forwarded-For. */
+function clientIp(request: Request) {
+  return (
+    request.headers.get("x-real-ip")?.trim() ||
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    "unknown"
+  );
+}
 
-  if (rateLimited(ip)) {
-    return NextResponse.json(
-      { error: "Too many messages. Please try again shortly." },
-      { status: 429, headers: { "Retry-After": "60" } },
-    );
+const str = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+
+function fail(status: number, message: string, headers?: HeadersInit) {
+  return NextResponse.json({ success: false, message }, { status, headers });
+}
+
+export async function POST(request: Request) {
+  if (rateLimited(clientIp(request))) {
+    return fail(429, "Too many messages. Please try again later.", {
+      "Retry-After": String(WINDOW_MS / 1000),
+    });
   }
 
-  let body: Payload;
+  let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    const parsed: unknown = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error();
+    body = parsed as Record<string, unknown>;
   } catch {
-    return NextResponse.json({ error: "Malformed request body." }, { status: 400 });
+    return fail(400, "Please complete all required fields.");
   }
 
   // Honeypot: a real person never fills a field that is hidden from them.
-  if (body.website) {
-    return NextResponse.json({ ok: true }, { status: 200 });
+  // Answer exactly as a success would, so bots learn nothing.
+  if (str(body.website)) {
+    return NextResponse.json({ success: true, message: "Message received." }, { status: 200 });
   }
 
-  const name = (body.name ?? "").trim();
-  const email = (body.email ?? "").trim();
-  const company = (body.company ?? "").trim();
-  const message = (body.message ?? "").trim();
-  const interest = (body.interest ?? "").trim();
+  const name = str(body.name);
+  const email = str(body.email);
+  const company = str(body.company);
+  const interest = str(body.interest);
+  const message = str(body.message);
 
-  const errors: Record<string, string> = {};
-  if (!name || name.length > 120) errors.name = "A name of 120 characters or fewer is required.";
-  if (!EMAIL.test(email)) errors.email = "A valid email address is required.";
-  if (!company || company.length > 200) errors.company = "A company name is required.";
-  if (message.length < 20 || message.length > 2000)
-    errors.message = "A message between 20 and 2,000 characters is required.";
+  const valid =
+    name.length > 0 &&
+    name.length <= LIMITS.name &&
+    email.length <= LIMITS.email &&
+    EMAIL.test(email) &&
+    company.length > 0 &&
+    company.length <= LIMITS.company &&
+    interest.length <= LIMITS.interest &&
+    message.length >= LIMITS.messageMin &&
+    message.length <= LIMITS.messageMax;
 
-  if (Object.keys(errors).length > 0) {
-    return NextResponse.json({ errors }, { status: 422 });
+  if (!valid) {
+    return fail(400, "Please complete all required fields.");
   }
 
   const result = await sendEnquiry({ name, email, company, interest, message });
 
-  // A transport error is a real failure — tell the client so it can offer the
-  // direct email address instead of pretending the message went through.
-  if (!result.delivered && result.reason === "error") {
-    return NextResponse.json(
-      { error: "The message could not be delivered. Please email us directly." },
-      { status: 502 },
-    );
+  if (!result.delivered) {
+    return fail(502, "Unable to send your message. Please email sales@ease-plus.com directly.");
   }
 
-  return NextResponse.json({ ok: true, delivered: result.delivered }, { status: 200 });
+  return NextResponse.json({ success: true, message: "Message received." }, { status: 200 });
 }
