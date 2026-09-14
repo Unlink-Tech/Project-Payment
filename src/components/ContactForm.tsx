@@ -84,7 +84,8 @@ export function ContactForm() {
         return;
       }
 
-      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+      const result: { success?: boolean } = await res.json().catch(() => ({}));
+      if (!res.ok || result.success !== true) throw new Error(`Request failed: ${res.status}`);
 
       setStatus("sent");
       setValues(initial);

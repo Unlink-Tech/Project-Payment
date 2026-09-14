@@ -41,7 +41,7 @@ src/
     ContactForm.tsx      client-side validation + submit states
     ThemeToggle.tsx      also exports the inlined head script
   lib/site.ts            all site content: nav, services, values, offices, FAQs
-  lib/mail.ts            contact delivery (Resend or SMTP)
+  lib/mail.ts            contact delivery (Amazon SES)
 public/art/              service-card hover artwork (SVG)
 ```
 
@@ -104,19 +104,15 @@ arrow/Home/End keys; mobile menu closes on Escape and restores focus; form error
 ## Contact form
 
 `POST /api/contact` validates server-side, then hands off to `src/lib/mail.ts`, which
-picks a transport from the environment:
+sends through **Amazon SES** (`@aws-sdk/client-ses`). Set these server-only variables
+(`.env.local` locally; the PM2 process environment in production):
 
-1. **Resend** — set `RESEND_API_KEY` (uses the HTTP API, no SDK)
-2. **SMTP** — set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+`AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `SES_FROM_EMAIL`, `SES_TO_EMAIL`
 
-Copy `.env.example` to `.env.local` and fill in one of them, plus `CONTACT_TO_EMAIL` and
-`CONTACT_FROM_EMAIL`. Mail is sent with `Reply-To` set to the enquirer, so replying from
-the inbox goes straight back to them.
+Mail goes From `SES_FROM_EMAIL` (an address on the SES-verified domain) To `SES_TO_EMAIL`
+(default `sales@ease-plus.com`), with `Reply-To` set to the enquirer. If SES is
+unconfigured or fails, the endpoint returns 502 and the form tells the visitor to email
+directly; SES error details are logged server-side only.
 
-With neither configured the enquiry is logged and the response reports
-`delivered: false` — local development works without credentials, and the endpoint never
-claims to have sent mail it did not send. If a configured transport fails, the endpoint
-returns 502 and the form tells the visitor to email directly.
-
-The endpoint also carries a honeypot field and a fixed-window rate limit (5 requests per
-minute per IP, per instance). Put a real limiter in front of it if traffic warrants.
+The endpoint also carries a honeypot field and an in-memory rate limit of 5 submissions
+per IP per 10 minutes, which suits a single PM2 process.
